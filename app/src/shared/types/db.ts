@@ -1,4 +1,7 @@
+import type { QuestionCategory, QuestionSubcategory } from '../catalog/question-taxonomy';
+
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type { QuestionCategory, QuestionSubcategory };
 
 export interface QuestionOption {
   id: string;
@@ -6,7 +9,6 @@ export interface QuestionOption {
 }
 
 export type QuestionType = 'multiple_choice' | 'hybrid' | 'free_text';
-export type QuestionCategory = 'light' | 'flirty' | 'spicy' | 'savage';
 export type GameSessionStatus = 'phase1' | 'phase2' | 'phase3' | 'completed';
 
 type EmptyRelationships = [];
@@ -84,6 +86,7 @@ export interface Database {
           couple_id: string | null;
           type: QuestionType;
           category: QuestionCategory;
+          subcategory: QuestionSubcategory;
           intensity: number;
           text: string;
           options: QuestionOption[] | null;
@@ -97,6 +100,7 @@ export interface Database {
           couple_id?: string | null;
           type: QuestionType;
           category: QuestionCategory;
+          subcategory: QuestionSubcategory;
           intensity: number;
           text: string;
           options?: QuestionOption[] | null;
@@ -108,6 +112,8 @@ export interface Database {
           is_active?: boolean;
           text?: string;
           options?: QuestionOption[] | null;
+          category?: QuestionCategory;
+          subcategory?: QuestionSubcategory;
         };
         Relationships: EmptyRelationships;
       };

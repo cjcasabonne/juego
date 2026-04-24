@@ -48,6 +48,7 @@ export default function QuestionsTable({ title, items, onDisable, loadingId }: P
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12, padding: '4px 8px', borderRadius: 999, background: '#f4edff' }}>{item.type}</span>
                 <span style={{ fontSize: 12, padding: '4px 8px', borderRadius: 999, background: '#fff6df' }}>{item.category}</span>
+                <span style={{ fontSize: 12, padding: '4px 8px', borderRadius: 999, background: '#eef7ec' }}>{item.subcategory}</span>
                 <span style={{ fontSize: 12, padding: '4px 8px', borderRadius: 999, background: '#edf8ff' }}>intensidad {item.intensity}</span>
               </div>
               {onDisable && item.is_active && (

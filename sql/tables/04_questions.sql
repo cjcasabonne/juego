@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS questions (
   question_id TEXT,
   couple_id UUID REFERENCES couples(id) ON DELETE SET NULL,
   type TEXT NOT NULL CHECK (type IN ('multiple_choice', 'hybrid', 'free_text')),
-  category TEXT NOT NULL CHECK (category IN ('light', 'flirty', 'spicy', 'savage')),
+  category TEXT NOT NULL CHECK (char_length(btrim(category)) BETWEEN 1 AND 80),
+  subcategory TEXT NOT NULL CHECK (char_length(btrim(subcategory)) BETWEEN 1 AND 80),
   intensity SMALLINT NOT NULL CHECK (intensity BETWEEN 1 AND 5),
   text TEXT NOT NULL CHECK (char_length(btrim(text)) BETWEEN 1 AND 500),
   options JSONB CHECK (

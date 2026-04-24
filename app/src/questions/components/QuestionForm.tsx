@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
-import type { QuestionCategory, QuestionOption, QuestionType } from '../../shared/types/db';
+import { getSubcategoriesForCategory, questionTaxonomy } from '../../shared/catalog/question-taxonomy';
+import type { QuestionCategory, QuestionOption, QuestionSubcategory, QuestionType } from '../../shared/types/db';
 import Button from '../../shared/components/Button';
 import Input from '../../shared/components/Input';
 
 interface QuestionDraft {
   type: QuestionType;
   category: QuestionCategory;
+  subcategory: QuestionSubcategory;
   intensity: number;
   text: string;
   option1: string;
@@ -18,6 +20,7 @@ interface Props {
   onSubmit: (payload: {
     type: QuestionType;
     category: QuestionCategory;
+    subcategory: QuestionSubcategory;
     intensity: number;
     text: string;
     options: QuestionOption[] | null;
@@ -27,7 +30,8 @@ interface Props {
 
 const initialState: QuestionDraft = {
   type: 'multiple_choice',
-  category: 'light',
+  category: 'sexy-questions',
+  subcategory: 'light',
   intensity: 1,
   text: '',
   option1: '',
@@ -50,6 +54,7 @@ export default function QuestionForm({ onSubmit, loading = false }: Props) {
 
   const showOptions = draft.type !== 'free_text';
   const options = useMemo(() => buildOptions(draft), [draft]);
+  const availableSubcategories = useMemo(() => getSubcategoriesForCategory(draft.category), [draft.category]);
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -68,6 +73,7 @@ export default function QuestionForm({ onSubmit, loading = false }: Props) {
     await onSubmit({
       type: draft.type,
       category: draft.category,
+      subcategory: draft.subcategory,
       intensity: draft.intensity,
       text: draft.text,
       options,
@@ -78,6 +84,15 @@ export default function QuestionForm({ onSubmit, loading = false }: Props) {
 
   const setField = <K extends keyof QuestionDraft>(key: K, value: QuestionDraft[K]) => {
     setDraft((current) => ({ ...current, [key]: value }));
+  };
+
+  const onCategoryChange = (category: QuestionCategory) => {
+    const firstSubcategory = getSubcategoriesForCategory(category)[0];
+    setDraft((current) => ({
+      ...current,
+      category,
+      subcategory: firstSubcategory?.slug ?? current.subcategory,
+    }));
   };
 
   return (
@@ -106,16 +121,32 @@ export default function QuestionForm({ onSubmit, loading = false }: Props) {
       </div>
 
       <div style={{ display: 'grid', gap: 6 }}>
-        <label style={{ fontSize: 14, fontWeight: 600 }}>Categoría</label>
+        <label style={{ fontSize: 14, fontWeight: 600 }}>Category</label>
         <select
           value={draft.category}
-          onChange={(event) => setField('category', event.target.value as QuestionCategory)}
+          onChange={(event) => onCategoryChange(event.target.value as QuestionCategory)}
           style={{ border: '1px solid #d6ccdf', borderRadius: 12, padding: '0.8rem 0.9rem' }}
         >
-          <option value="light">light</option>
-          <option value="flirty">flirty</option>
-          <option value="spicy">spicy</option>
-          <option value="savage">savage</option>
+          {questionTaxonomy.map((category) => (
+            <option key={category.slug} value={category.slug}>
+              {category.slug}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ display: 'grid', gap: 6 }}>
+        <label style={{ fontSize: 14, fontWeight: 600 }}>Subcategory</label>
+        <select
+          value={draft.subcategory}
+          onChange={(event) => setField('subcategory', event.target.value as QuestionSubcategory)}
+          style={{ border: '1px solid #d6ccdf', borderRadius: 12, padding: '0.8rem 0.9rem' }}
+        >
+          {availableSubcategories.map((subcategory) => (
+            <option key={subcategory.slug} value={subcategory.slug}>
+              {subcategory.slug}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -152,10 +183,10 @@ export default function QuestionForm({ onSubmit, loading = false }: Props) {
 
       {showOptions && (
         <div style={{ display: 'grid', gap: 10 }}>
-          <Input label="Opción 1" value={draft.option1} onChange={(event) => setField('option1', event.target.value)} />
-          <Input label="Opción 2" value={draft.option2} onChange={(event) => setField('option2', event.target.value)} />
-          <Input label="Opción 3" value={draft.option3} onChange={(event) => setField('option3', event.target.value)} />
-          <Input label="Opción 4" value={draft.option4} onChange={(event) => setField('option4', event.target.value)} />
+          <Input label="Opcion 1" value={draft.option1} onChange={(event) => setField('option1', event.target.value)} />
+          <Input label="Opcion 2" value={draft.option2} onChange={(event) => setField('option2', event.target.value)} />
+          <Input label="Opcion 3" value={draft.option3} onChange={(event) => setField('option3', event.target.value)} />
+          <Input label="Opcion 4" value={draft.option4} onChange={(event) => setField('option4', event.target.value)} />
         </div>
       )}
 

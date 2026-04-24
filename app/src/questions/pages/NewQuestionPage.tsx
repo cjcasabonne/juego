@@ -34,6 +34,7 @@ export default function NewQuestionPage() {
             createdBy: user.id,
             type: payload.type,
             category: payload.category,
+            subcategory: payload.subcategory,
             intensity: payload.intensity,
             text: payload.text,
             options: payload.options,

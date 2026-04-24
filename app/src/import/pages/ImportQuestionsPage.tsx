@@ -67,7 +67,7 @@ export default function ImportQuestionsPage() {
             <div style={{ display: 'grid', gap: 4 }}>
               <strong>Plantilla de importacion</strong>
               <span style={{ color: '#6f5a84', fontSize: 14 }}>
-                Descarga un Excel listo con hoja `Preguntas` y columnas validas.
+                Descarga un Excel listo con hoja `Preguntas` y columnas `category + subcategory`.
               </span>
             </div>
             <Button variant="secondary" type="button" onClick={downloadQuestionsTemplate}>

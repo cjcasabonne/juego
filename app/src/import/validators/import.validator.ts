@@ -1,13 +1,14 @@
 import type { ImportRow } from '../../shared/types/domain';
-import type { QuestionCategory, QuestionOption, QuestionType } from '../../shared/types/db';
+import { isValidQuestionCategory, isValidQuestionSubcategoryPair } from '../../shared/catalog/question-taxonomy';
+import type { QuestionCategory, QuestionOption, QuestionSubcategory, QuestionType } from '../../shared/types/db';
 
 const validTypes: QuestionType[] = ['multiple_choice', 'hybrid', 'free_text'];
-const validCategories: QuestionCategory[] = ['light', 'flirty', 'spicy', 'savage'];
 
 export interface ValidatedImportRow {
   questionId: string | null;
   type: QuestionType;
   category: QuestionCategory;
+  subcategory: QuestionSubcategory;
   intensity: number;
   text: string;
   options: QuestionOption[] | null;
@@ -19,11 +20,15 @@ export function validateImportRow(row: ImportRow, index: number): { value?: Vali
   }
 
   if (!validTypes.includes(row.type)) {
-    return { error: `Fila ${index + 2}: type inválido.` };
+    return { error: `Fila ${index + 2}: type invalido.` };
   }
 
-  if (!validCategories.includes(row.category)) {
-    return { error: `Fila ${index + 2}: category inválido.` };
+  if (!isValidQuestionCategory(row.category)) {
+    return { error: `Fila ${index + 2}: category invalido.` };
+  }
+
+  if (!isValidQuestionSubcategoryPair(row.category, row.subcategory)) {
+    return { error: `Fila ${index + 2}: subcategory invalida para la category indicada.` };
   }
 
   if (!Number.isInteger(row.intensity) || row.intensity < 1 || row.intensity > 5) {
@@ -31,7 +36,7 @@ export function validateImportRow(row: ImportRow, index: number): { value?: Vali
   }
 
   if (!row.text || row.text.length > 500) {
-    return { error: `Fila ${index + 2}: text es obligatorio y debe tener máximo 500 caracteres.` };
+    return { error: `Fila ${index + 2}: text es obligatorio y debe tener maximo 500 caracteres.` };
   }
 
   if (row.type === 'free_text') {
@@ -40,6 +45,7 @@ export function validateImportRow(row: ImportRow, index: number): { value?: Vali
         questionId: row.questionId || null,
         type: row.type,
         category: row.category,
+        subcategory: row.subcategory,
         intensity: row.intensity,
         text: row.text,
         options: null,
@@ -60,6 +66,7 @@ export function validateImportRow(row: ImportRow, index: number): { value?: Vali
       questionId: row.questionId || null,
       type: row.type,
       category: row.category,
+      subcategory: row.subcategory,
       intensity: row.intensity,
       text: row.text,
       options,

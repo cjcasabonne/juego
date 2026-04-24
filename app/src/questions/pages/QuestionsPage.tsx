@@ -39,9 +39,14 @@ export default function QuestionsPage() {
       title="Preguntas"
       backTo="/couples"
       actions={
-        <Link to="/questions/new" state={{ coupleId }} style={{ textDecoration: 'none' }}>
-          <Button>Nueva pregunta</Button>
-        </Link>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Link to="/categories" style={{ textDecoration: 'none' }}>
+            <Button variant="secondary">Categories</Button>
+          </Link>
+          <Link to="/questions/new" state={{ coupleId }} style={{ textDecoration: 'none' }}>
+            <Button>Nueva pregunta</Button>
+          </Link>
+        </div>
       }
     >
       {(error || disableError) && <ErrorState message={error ?? disableError ?? 'Error'} onRetry={() => void reload()} />}

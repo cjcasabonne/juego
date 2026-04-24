@@ -43,6 +43,7 @@ export const importService = {
         couple_id: params.coupleId,
         type: row.type,
         category: row.category,
+        subcategory: row.subcategory,
         intensity: row.intensity,
         text: row.text,
         options: row.options,

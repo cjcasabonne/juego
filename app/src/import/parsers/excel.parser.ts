@@ -19,6 +19,7 @@ export async function parseQuestionsExcel(file: File): Promise<ImportRow[]> {
     isExample: normalizeBoolean(row.is_example),
     type: String(row.type ?? '').trim() as ImportRow['type'],
     category: String(row.category ?? '').trim() as ImportRow['category'],
+    subcategory: String(row.subcategory ?? '').trim() as ImportRow['subcategory'],
     intensity: Number(row.intensity ?? 0),
     text: String(row.text ?? '').trim(),
     option1: String(row.option_1 ?? '').trim(),

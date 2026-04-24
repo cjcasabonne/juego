@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase';
-import type { Database, QuestionCategory, QuestionType } from '../../shared/types/db';
+import type { Database, QuestionCategory, QuestionSubcategory, QuestionType } from '../../shared/types/db';
 
 type QuestionRow = Database['public']['Tables']['questions']['Row'];
 type QuestionInsert = Database['public']['Tables']['questions']['Insert'];
@@ -9,6 +9,7 @@ export interface CreateQuestionInput {
   coupleId: string;
   type: QuestionType;
   category: QuestionCategory;
+  subcategory: QuestionSubcategory;
   intensity: number;
   text: string;
   options: QuestionOption;
@@ -45,6 +46,7 @@ export const questionsService = {
       couple_id: input.coupleId,
       type: input.type,
       category: input.category,
+      subcategory: input.subcategory,
       intensity: input.intensity,
       text: input.text.trim(),
       options: input.options,

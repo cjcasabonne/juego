@@ -13,6 +13,7 @@ import SessionSummaryPage from './sessions/pages/SessionSummaryPage';
 import Phase1Page from './game/phase1/pages/Phase1Page';
 import Phase2Page from './game/phase2/pages/Phase2Page';
 import Phase3Page from './game/phase3/pages/Phase3Page';
+import CategoriesPage from './content/pages/CategoriesPage';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="questions" element={<QuestionsPage />} />
         <Route path="questions/new" element={<NewQuestionPage />} />
         <Route path="import/questions" element={<ImportQuestionsPage />} />
+        <Route path="categories" element={<CategoriesPage />} />
         <Route path="session/:sessionId" element={<SessionRouterPage />} />
         <Route path="session/:sessionId/phase1" element={<Phase1Page />} />
         <Route path="session/:sessionId/phase2" element={<Phase2Page />} />

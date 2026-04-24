@@ -1,11 +1,12 @@
 import type {
   QuestionType,
   QuestionCategory,
+  QuestionSubcategory,
   GameSessionStatus,
   QuestionOption,
 } from './db';
 
-export type { QuestionType, QuestionCategory, GameSessionStatus, QuestionOption };
+export type { QuestionType, QuestionCategory, QuestionSubcategory, GameSessionStatus, QuestionOption };
 
 export interface Profile {
   id: string;
@@ -35,6 +36,7 @@ export interface Question {
   coupleId: string | null;
   type: QuestionType;
   category: QuestionCategory;
+  subcategory: QuestionSubcategory;
   intensity: number;
   text: string;
   options: QuestionOption[] | null;
@@ -104,6 +106,7 @@ export interface ImportRow {
   isExample: boolean;
   type: QuestionType;
   category: QuestionCategory;
+  subcategory: QuestionSubcategory;
   intensity: number;
   text: string;
   option1: string;
