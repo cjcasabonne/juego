@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { QuestionOption, QuestionType } from '../../../shared/types/db';
 import Button from '../../../shared/components/Button';
 
@@ -24,12 +24,6 @@ export default function AnswerQuestionCard({ question, position, total, onSubmit
   const showOptions = question.type !== 'free_text';
   const showFreeText = question.type !== 'multiple_choice';
   const optionList = useMemo(() => question.options ?? [], [question.options]);
-
-  useEffect(() => {
-    setSelectedOptionId(question.type === 'free_text' ? null : question.options?.[0]?.id ?? null);
-    setFreeText('');
-    setError(null);
-  }, [question.id, question.options, question.type]);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

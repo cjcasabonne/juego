@@ -7,9 +7,10 @@ type GameSessionRow = Database['public']['Tables']['game_sessions']['Row'];
 interface Props {
   session: GameSessionRow;
   sessionNumber?: number;
+  coupleName?: string | null;
 }
 
-export default function ActiveSessionCard({ session, sessionNumber }: Props) {
+export default function ActiveSessionCard({ session, sessionNumber, coupleName }: Props) {
   const targetPath =
     session.status === 'completed' ? `/session/${session.id}/summary` : `/session/${session.id}/${session.status}`;
 
@@ -25,7 +26,7 @@ export default function ActiveSessionCard({ session, sessionNumber }: Props) {
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        <strong>Sesion {sessionNumber ?? '-'}</strong>
+        <strong>Sesion {sessionNumber ?? '-'} - {coupleName?.trim() || 'Pareja sin nombre'}</strong>
         <span style={{ fontSize: 13, color: '#6f5a84' }}>{session.status}</span>
       </div>
       <p style={{ margin: 0, color: '#6f5a84', fontSize: 14 }}>

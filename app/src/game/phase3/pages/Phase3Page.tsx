@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import PageShell from '../../../shared/components/PageShell';
 import LoadingState from '../../../shared/components/LoadingState';
@@ -9,6 +9,7 @@ import { useSession } from '../../../sessions/hooks/useSession';
 import { useSessionScore } from '../../../sessions/hooks/useSessionScore';
 import { useSessionRealtime } from '../../../sessions/hooks/useSessionRealtime';
 import { userSessionStateService } from '../../../sessions/services/user-session-state.service';
+import SessionStatusNotice from '../../../sessions/components/SessionStatusNotice';
 import { useRevealFeed } from '../hooks/useRevealFeed';
 import RevealCard from '../components/RevealCard';
 import { freeTextValidationsService } from '../services/free-text-validations.service';
@@ -25,6 +26,8 @@ export default function Phase3Page() {
   const [stateError, setStateError] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [validating, setValidating] = useState(false);
+  const [transitionNotice, setTransitionNotice] = useState<string | null>(null);
+  const redirectTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -64,13 +67,28 @@ export default function Phase3Page() {
 
   useSessionRealtime(sessionId, (status) => {
     setSession((current) => (current ? { ...current, status } : current));
+
+    if (status !== 'phase3' && sessionId && redirectTimeoutRef.current === null) {
+      setTransitionNotice(status === 'completed' ? 'Tu pareja termino el resumen. Cerrando sesion...' : 'Actualizando sesion...');
+      redirectTimeoutRef.current = window.setTimeout(() => {
+        navigate(`/session/${sessionId}`, { replace: true });
+      }, 1400);
+    }
   });
 
   useEffect(() => {
-    if (session?.status && session.status !== 'phase3') {
+    return () => {
+      if (redirectTimeoutRef.current !== null) {
+        window.clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (session?.status && session.status !== 'phase3' && !transitionNotice) {
       navigate(`/session/${session.id}`, { replace: true });
     }
-  }, [navigate, session]);
+  }, [navigate, session, transitionNotice]);
 
   if (authLoading || sessionLoading || scoreLoading || feedLoading || stateLoading) {
     return <LoadingState message="Preparando resumen..." />;
@@ -89,7 +107,14 @@ export default function Phase3Page() {
   }
 
   if (session.status !== 'phase3') {
-    return <LoadingState message="Redirigiendo a la fase correcta..." />;
+    return (
+      <PageShell title="Fase 3" backTo="/couples">
+        <div style={{ display: 'grid', gap: 18 }}>
+          {transitionNotice && <SessionStatusNotice message={transitionNotice} />}
+          <LoadingState message="Redirigiendo a la fase correcta..." />
+        </div>
+      </PageShell>
+    );
   }
 
   const pendingValidations = items.filter(
@@ -131,6 +156,7 @@ export default function Phase3Page() {
   return (
     <PageShell title="Fase 3" backTo="/couples">
       <div style={{ display: 'grid', gap: 18 }}>
+        {transitionNotice && <SessionStatusNotice message={transitionNotice} />}
         <section
           style={{
             background: '#fff',

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import PageShell from '../../../shared/components/PageShell';
 import LoadingState from '../../../shared/components/LoadingState';
@@ -12,6 +12,7 @@ import { usePhase1Progress } from '../hooks/usePhase1Progress';
 import PhaseProgress from '../components/PhaseProgress';
 import AnswerQuestionCard from '../components/AnswerQuestionCard';
 import { userSessionStateService } from '../../../sessions/services/user-session-state.service';
+import SessionStatusNotice from '../../../sessions/components/SessionStatusNotice';
 
 export default function Phase1Page() {
   const navigate = useNavigate();
@@ -27,19 +28,36 @@ export default function Phase1Page() {
     error: answersError,
     submitAnswer,
   } = usePhase1Answers(sessionId, user?.id);
+  const [transitionNotice, setTransitionNotice] = useState<string | null>(null);
+  const redirectTimeoutRef = useRef<number | null>(null);
 
   useSessionRealtime(sessionId, (status) => {
     setSession((current) => (current ? { ...current, status } : current));
+
+    if (status !== 'phase1' && sessionId && redirectTimeoutRef.current === null) {
+      setTransitionNotice(status === 'phase2' ? 'Tu pareja completo la fase 1. Pasando a fase 2...' : 'Actualizando sesion...');
+      redirectTimeoutRef.current = window.setTimeout(() => {
+        navigate(`/session/${sessionId}`, { replace: true });
+      }, 1400);
+    }
   });
 
   const progress = usePhase1Progress(items.length, answers.length);
   const currentItem = items.find((item) => !answeredQuestionIds.has(item.question_id)) ?? null;
 
   useEffect(() => {
-    if (session?.status && session.status !== 'phase1') {
+    return () => {
+      if (redirectTimeoutRef.current !== null) {
+        window.clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (session?.status && session.status !== 'phase1' && !transitionNotice) {
       navigate(`/session/${session.id}`, { replace: true });
     }
-  }, [navigate, session]);
+  }, [navigate, session, transitionNotice]);
 
   useEffect(() => {
     if (!sessionId || !user?.id || !progress.isComplete || !session || session.status !== 'phase1') return;
@@ -76,7 +94,14 @@ export default function Phase1Page() {
   }
 
   if (session.status !== 'phase1') {
-    return <LoadingState message="Redirigiendo a la fase correcta..." />;
+    return (
+      <PageShell title="Fase 1" backTo="/couples">
+        <div style={{ display: 'grid', gap: 18 }}>
+          {transitionNotice && <SessionStatusNotice message={transitionNotice} />}
+          <LoadingState message="Redirigiendo a la fase correcta..." />
+        </div>
+      </PageShell>
+    );
   }
 
   if (items.length === 0) {
@@ -90,19 +115,21 @@ export default function Phase1Page() {
   if (progress.isComplete || !currentItem) {
     return (
       <PageShell title="Fase 1" backTo="/couples">
-        <PhaseProgress current={progress.answeredQuestions} total={progress.totalQuestions} percent={progress.percent} />
-        <div
-          style={{
-            marginTop: 18,
-            background: '#fff',
-            border: '1px solid #eadff5',
-            borderRadius: 22,
-            padding: 22,
-          }}
-        >
-          <p style={{ margin: 0, color: '#6f5a84' }}>
-            Respuestas completas. Esperando que el partner termine para pasar a `phase2`.
-          </p>
+        <div style={{ display: 'grid', gap: 18 }}>
+          {transitionNotice && <SessionStatusNotice message={transitionNotice} />}
+          <PhaseProgress current={progress.answeredQuestions} total={progress.totalQuestions} percent={progress.percent} />
+          <div
+            style={{
+              background: '#fff',
+              border: '1px solid #eadff5',
+              borderRadius: 22,
+              padding: 22,
+            }}
+          >
+            <p style={{ margin: 0, color: '#6f5a84' }}>
+              Respuestas completas. Esperando que el partner termine para pasar a `phase2`.
+            </p>
+          </div>
         </div>
       </PageShell>
     );
@@ -111,12 +138,14 @@ export default function Phase1Page() {
   return (
     <PageShell title="Fase 1" backTo="/couples">
       <div style={{ display: 'grid', gap: 18 }}>
+        {transitionNotice && <SessionStatusNotice message={transitionNotice} />}
         <PhaseProgress
           current={progress.answeredQuestions}
           total={progress.totalQuestions}
           percent={progress.percent}
         />
         <AnswerQuestionCard
+          key={currentItem.question_id}
           question={currentItem.question}
           position={currentItem.position}
           total={items.length}

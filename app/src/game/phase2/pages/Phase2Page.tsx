@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import PageShell from '../../../shared/components/PageShell';
 import LoadingState from '../../../shared/components/LoadingState';
@@ -12,6 +12,7 @@ import { usePhase2Predictions } from '../hooks/usePhase2Predictions';
 import { usePhase2Progress } from '../hooks/usePhase2Progress';
 import PhaseProgress from '../components/PhaseProgress';
 import PredictionQuestionCard from '../components/PredictionQuestionCard';
+import SessionStatusNotice from '../../../sessions/components/SessionStatusNotice';
 
 export default function Phase2Page() {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ export default function Phase2Page() {
     tone: 'success' | 'error' | 'pending';
     message: string;
   } | null>(null);
+  const [transitionNotice, setTransitionNotice] = useState<string | null>(null);
+  const redirectTimeoutRef = useRef<number | null>(null);
   const {
     predictions,
     predictedQuestionIds,
@@ -34,16 +37,31 @@ export default function Phase2Page() {
 
   useSessionRealtime(sessionId, (status) => {
     setSession((current) => (current ? { ...current, status } : current));
+
+    if (status !== 'phase2' && sessionId && redirectTimeoutRef.current === null) {
+      setTransitionNotice(status === 'phase3' ? 'Tu pareja completo la fase 2. Pasando a fase 3...' : 'Actualizando sesion...');
+      redirectTimeoutRef.current = window.setTimeout(() => {
+        navigate(`/session/${sessionId}`, { replace: true });
+      }, 1400);
+    }
   });
 
   const progress = usePhase2Progress(items.length, predictions.length);
   const currentItem = items.find((item) => !predictedQuestionIds.has(item.question_id)) ?? null;
 
   useEffect(() => {
-    if (session?.status && session.status !== 'phase2') {
+    return () => {
+      if (redirectTimeoutRef.current !== null) {
+        window.clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (session?.status && session.status !== 'phase2' && !transitionNotice) {
       navigate(`/session/${session.id}`, { replace: true });
     }
-  }, [navigate, session]);
+  }, [navigate, session, transitionNotice]);
 
   useEffect(() => {
     if (!sessionId || !user?.id || !progress.isComplete || !session || session.status !== 'phase2') return;
@@ -82,25 +100,34 @@ export default function Phase2Page() {
   }
 
   if (session.status !== 'phase2') {
-    return <LoadingState message="Redirigiendo a la fase correcta..." />;
+    return (
+      <PageShell title="Fase 2" backTo="/couples">
+        <div style={{ display: 'grid', gap: 18 }}>
+          {transitionNotice && <SessionStatusNotice message={transitionNotice} />}
+          <LoadingState message="Redirigiendo a la fase correcta..." />
+        </div>
+      </PageShell>
+    );
   }
 
   if (progress.isComplete || !currentItem) {
     return (
       <PageShell title="Fase 2" backTo="/couples">
-        <PhaseProgress current={progress.predictedQuestions} total={progress.totalQuestions} percent={progress.percent} />
-        <div
-          style={{
-            marginTop: 18,
-            background: '#fff',
-            border: '1px solid #eadff5',
-            borderRadius: 22,
-            padding: 22,
-          }}
-        >
-          <p style={{ margin: 0, color: '#6f5a84' }}>
-            Predicciones completas. Esperando que el partner termine para pasar a `phase3`.
-          </p>
+        <div style={{ display: 'grid', gap: 18 }}>
+          {transitionNotice && <SessionStatusNotice message={transitionNotice} />}
+          <PhaseProgress current={progress.predictedQuestions} total={progress.totalQuestions} percent={progress.percent} />
+          <div
+            style={{
+              background: '#fff',
+              border: '1px solid #eadff5',
+              borderRadius: 22,
+              padding: 22,
+            }}
+          >
+            <p style={{ margin: 0, color: '#6f5a84' }}>
+              Predicciones completas. Esperando que el partner termine para pasar a `phase3`.
+            </p>
+          </div>
         </div>
       </PageShell>
     );
@@ -109,6 +136,7 @@ export default function Phase2Page() {
   return (
     <PageShell title="Fase 2" backTo="/couples">
       <div style={{ display: 'grid', gap: 18 }}>
+        {transitionNotice && <SessionStatusNotice message={transitionNotice} />}
         <PhaseProgress
           current={progress.predictedQuestions}
           total={progress.totalQuestions}
@@ -144,6 +172,7 @@ export default function Phase2Page() {
           </section>
         )}
         <PredictionQuestionCard
+          key={currentItem.question_id}
           question={currentItem.question}
           position={currentItem.position}
           total={items.length}

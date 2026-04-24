@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { QuestionOption, QuestionType } from '../../../shared/types/db';
 import Button from '../../../shared/components/Button';
 
@@ -26,12 +26,6 @@ export default function PredictionQuestionCard({ question, position, total, onSu
   const showOptions = question.type !== 'free_text';
   const showFreeText = question.type === 'free_text';
   const optionList = useMemo(() => question.options ?? [], [question.options]);
-
-  useEffect(() => {
-    setPredictedOptionId(question.type === 'free_text' ? null : question.options?.[0]?.id ?? null);
-    setPredictedFreeText('');
-    setError(null);
-  }, [question.id, question.options, question.type]);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

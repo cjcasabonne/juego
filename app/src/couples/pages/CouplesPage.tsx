@@ -35,6 +35,7 @@ export default function CouplesPage() {
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
       .map((session, index) => [session.id, index + 1]),
   );
+  const coupleNameMap = new Map(couples.map((couple) => [couple.id, couple.name]));
 
   return (
     <PageShell
@@ -89,6 +90,7 @@ export default function CouplesPage() {
                 key={session.id}
                 session={session}
                 sessionNumber={sessionNumberMap.get(session.id)}
+                coupleName={coupleNameMap.get(session.couple_id)}
               />
             ))}
           </div>

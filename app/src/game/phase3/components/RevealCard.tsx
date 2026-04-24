@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Button from '../../../shared/components/Button';
+import { resolveOptionText } from '../../../shared/utils/questions';
 import type { RevealItem } from '../services/reveal.service';
 
 interface Props {
@@ -9,14 +10,14 @@ interface Props {
   validating?: boolean;
 }
 
-function renderAnswer(item: RevealItem['myAnswer']) {
+function renderAnswer(question: RevealItem['question'], item: RevealItem['myAnswer']) {
   if (!item) return 'Sin respuesta';
-  return item.free_text ?? item.selected_option_id ?? 'Sin respuesta';
+  return item.free_text ?? resolveOptionText(question.options, item.selected_option_id);
 }
 
-function renderPrediction(item: RevealItem['myPrediction']) {
+function renderPrediction(question: RevealItem['question'], item: RevealItem['myPrediction']) {
   if (!item) return 'Sin prediccion';
-  return item.predicted_free_text ?? item.predicted_option_id ?? 'Sin prediccion';
+  return item.predicted_free_text ?? resolveOptionText(question.options, item.predicted_option_id, 'Sin prediccion');
 }
 
 export default function RevealCard({ item, currentUserId, onValidate, validating = false }: Props) {
@@ -61,22 +62,22 @@ export default function RevealCard({ item, currentUserId, onValidate, validating
       <div style={{ display: 'grid', gap: 12 }}>
         <section style={{ display: 'grid', gap: 6 }}>
           <strong>Tu respuesta</strong>
-          <p style={{ margin: 0, color: '#1f1527' }}>{renderAnswer(item.myAnswer)}</p>
+          <p style={{ margin: 0, color: '#1f1527' }}>{renderAnswer(item.question, item.myAnswer)}</p>
         </section>
 
         <section style={{ display: 'grid', gap: 6 }}>
           <strong>Lo que tu partner predijo sobre ti</strong>
-          <p style={{ margin: 0, color: '#1f1527' }}>{renderPrediction(item.partnerPrediction)}</p>
+          <p style={{ margin: 0, color: '#1f1527' }}>{renderPrediction(item.question, item.partnerPrediction)}</p>
         </section>
 
         <section style={{ display: 'grid', gap: 6 }}>
           <strong>Respuesta real de tu partner</strong>
-          <p style={{ margin: 0, color: '#1f1527' }}>{renderAnswer(item.partnerAnswer)}</p>
+          <p style={{ margin: 0, color: '#1f1527' }}>{renderAnswer(item.question, item.partnerAnswer)}</p>
         </section>
 
         <section style={{ display: 'grid', gap: 6 }}>
           <strong>Tu prediccion sobre tu partner</strong>
-          <p style={{ margin: 0, color: '#1f1527' }}>{renderPrediction(item.myPrediction)}</p>
+          <p style={{ margin: 0, color: '#1f1527' }}>{renderPrediction(item.question, item.myPrediction)}</p>
         </section>
       </div>
 

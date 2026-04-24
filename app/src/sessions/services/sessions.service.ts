@@ -16,12 +16,14 @@ export const sessionsService = {
     return data;
   },
 
-  async listActiveSessions(): Promise<GameSessionRow[]> {
-    const { data, error } = await supabase
-      .from('game_sessions')
-      .select('*')
-      .neq('status', 'completed')
-      .order('created_at', { ascending: false });
+  async listSessions(includeCompleted = false): Promise<GameSessionRow[]> {
+    let query = supabase.from('game_sessions').select('*');
+
+    if (!includeCompleted) {
+      query = query.neq('status', 'completed');
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) throw new Error(error.message);
     return data;

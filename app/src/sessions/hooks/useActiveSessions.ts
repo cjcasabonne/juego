@@ -4,7 +4,7 @@ import { sessionsService } from '../services/sessions.service';
 
 type GameSessionRow = Database['public']['Tables']['game_sessions']['Row'];
 
-export function useActiveSessions() {
+export function useActiveSessions(includeCompleted = false) {
   const [sessions, setSessions] = useState<GameSessionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -13,13 +13,13 @@ export function useActiveSessions() {
     setLoading(true);
     setError(null);
     try {
-      setSessions(await sessionsService.listActiveSessions());
+      setSessions(await sessionsService.listSessions(includeCompleted));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudieron cargar las sesiones activas');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [includeCompleted]);
 
   useEffect(() => {
     let active = true;
