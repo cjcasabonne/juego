@@ -1,11 +1,11 @@
 import { supabase } from '../../lib/supabase';
-import type { Database } from '../../shared/types/db';
+import type { Database, QuestionCategory } from '../../shared/types/db';
 
 type GameSessionRow = Database['public']['Tables']['game_sessions']['Row'];
 
 export const sessionsService = {
-  async createSession(coupleId: string): Promise<string> {
-    const { data, error } = await supabase.rpc('fn_create_session', { p_couple_id: coupleId });
+  async createSession(coupleId: string, category: QuestionCategory): Promise<string> {
+    const { data, error } = await supabase.rpc('fn_create_session', { p_couple_id: coupleId, p_category: category });
     if (error) throw new Error(error.message);
     return data;
   },

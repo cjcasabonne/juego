@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS questions (
 CREATE TABLE IF NOT EXISTS game_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   couple_id UUID NOT NULL REFERENCES couples(id) ON DELETE CASCADE,
+  category TEXT CHECK (category IS NULL OR char_length(btrim(category)) BETWEEN 1 AND 80),
   status TEXT NOT NULL DEFAULT 'phase1'
     CHECK (status IN ('phase1', 'phase2', 'phase3', 'completed')),
   created_by UUID NOT NULL REFERENCES profiles(id),

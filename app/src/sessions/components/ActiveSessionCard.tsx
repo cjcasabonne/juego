@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Database } from '../../shared/types/db';
+import { questionTaxonomy } from '../../shared/catalog/question-taxonomy';
 import Button from '../../shared/components/Button';
 
 type GameSessionRow = Database['public']['Tables']['game_sessions']['Row'];
@@ -13,6 +14,8 @@ interface Props {
 export default function ActiveSessionCard({ session, sessionNumber, coupleName }: Props) {
   const targetPath =
     session.status === 'completed' ? `/session/${session.id}/summary` : `/session/${session.id}/${session.status}`;
+  const categoryLabel =
+    questionTaxonomy.find((item) => item.slug === session.category)?.label ?? session.category ?? 'Sin categoria';
 
   return (
     <article
@@ -29,6 +32,7 @@ export default function ActiveSessionCard({ session, sessionNumber, coupleName }
         <strong>Sesion {sessionNumber ?? '-'} - {coupleName?.trim() || 'Pareja sin nombre'}</strong>
         <span style={{ fontSize: 13, color: '#6f5a84' }}>{session.status}</span>
       </div>
+      <p style={{ margin: 0, color: '#6f5a84', fontSize: 14 }}>Categoria: {categoryLabel}</p>
       <p style={{ margin: 0, color: '#6f5a84', fontSize: 14 }}>
         Creada: {new Date(session.created_at).toLocaleString()}
       </p>

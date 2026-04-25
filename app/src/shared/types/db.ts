@@ -121,6 +121,7 @@ export interface Database {
         Row: {
           id: string;
           couple_id: string;
+          category: QuestionCategory | null;
           status: GameSessionStatus;
           created_by: string;
           created_at: string;
@@ -129,6 +130,7 @@ export interface Database {
         Insert: {
           id?: string;
           couple_id: string;
+          category?: QuestionCategory | null;
           status?: GameSessionStatus;
           created_by: string;
           created_at?: string;
@@ -137,6 +139,7 @@ export interface Database {
         Update: {
           id?: string;
           couple_id?: string;
+          category?: QuestionCategory | null;
           status?: GameSessionStatus;
           created_by?: string;
           created_at?: string;
@@ -269,7 +272,7 @@ export interface Database {
     Views: Record<string, never>;
     Functions: {
       fn_create_session: {
-        Args: { p_couple_id: string };
+        Args: { p_couple_id: string; p_category: QuestionCategory };
         Returns: string;
       };
       fn_join_couple: {

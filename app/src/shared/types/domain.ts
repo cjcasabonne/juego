@@ -47,6 +47,7 @@ export interface Question {
 export interface GameSession {
   id: string;
   coupleId: string;
+  category: QuestionCategory | null;
   status: GameSessionStatus;
   createdBy: string;
   createdAt: string;

@@ -11,6 +11,7 @@ import { authService } from '../../auth/services/auth.service';
 import { useCreateSession } from '../../sessions/hooks/useCreateSession';
 import { useActiveSessions } from '../../sessions/hooks/useActiveSessions';
 import ActiveSessionCard from '../../sessions/components/ActiveSessionCard';
+import type { QuestionCategory } from '../../shared/types/db';
 
 export default function CouplesPage() {
   const navigate = useNavigate();
@@ -24,8 +25,8 @@ export default function CouplesPage() {
     reload: reloadSessions,
   } = useActiveSessions();
 
-  const onCreateSession = async (coupleId: string) => {
-    const sessionId = await createSession(coupleId);
+  const onCreateSession = async (coupleId: string, category: QuestionCategory) => {
+    const sessionId = await createSession(coupleId, category);
     void reloadSessions();
     navigate(`/session/${sessionId}/phase1`, { replace: true });
   };

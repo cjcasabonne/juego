@@ -1,16 +1,20 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import type { CoupleWithMembers } from '../hooks/useCouples';
+import { questionTaxonomy } from '../../shared/catalog/question-taxonomy';
+import type { QuestionCategory } from '../../shared/types/db';
 import Button from '../../shared/components/Button';
 import InviteCodeBox from './InviteCodeBox';
 
 interface Props {
   couple: CoupleWithMembers;
-  onCreateSession: (coupleId: string) => Promise<void>;
+  onCreateSession: (coupleId: string, category: QuestionCategory) => Promise<void>;
   sessionLoadingId?: string | null;
 }
 
 export default function CoupleCard({ couple, onCreateSession, sessionLoadingId }: Props) {
   const ready = couple.members.length === 2;
+  const [selectedCategory, setSelectedCategory] = useState<QuestionCategory>('sexy-questions');
 
   return (
     <article
@@ -41,11 +45,29 @@ export default function CoupleCard({ couple, onCreateSession, sessionLoadingId }
             color: ready ? '#1e6d37' : '#8a5b00',
           }}
         >
-          {ready ? 'Lista para sesión' : 'Pendiente de partner'}
+          {ready ? 'Lista para sesion' : 'Pendiente de partner'}
         </span>
       </div>
 
       <InviteCodeBox inviteCode={couple.invite_code} />
+
+      <div style={{ display: 'grid', gap: 6 }}>
+        <label style={{ fontSize: 14, fontWeight: 600, color: '#34114f' }}>Categoria para jugar</label>
+        <select
+          value={selectedCategory}
+          onChange={(event) => setSelectedCategory(event.target.value as QuestionCategory)}
+          style={{ border: '1px solid #d6ccdf', borderRadius: 12, padding: '0.8rem 0.9rem', background: '#fff' }}
+        >
+          {questionTaxonomy.map((category) => (
+            <option key={category.slug} value={category.slug}>
+              {category.label}
+            </option>
+          ))}
+        </select>
+        <span style={{ fontSize: 13, color: '#6f5a84' }}>
+          La sesion usara solo preguntas activas de esta categoria.
+        </span>
+      </div>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <Link to="/questions" state={{ coupleId: couple.id }} style={{ textDecoration: 'none' }}>
@@ -54,8 +76,12 @@ export default function CoupleCard({ couple, onCreateSession, sessionLoadingId }
         <Link to="/import/questions" state={{ coupleId: couple.id }} style={{ textDecoration: 'none' }}>
           <Button variant="secondary">Importar Excel</Button>
         </Link>
-        <Button disabled={!ready} loading={sessionLoadingId === couple.id} onClick={() => void onCreateSession(couple.id)}>
-          Crear sesión
+        <Button
+          disabled={!ready}
+          loading={sessionLoadingId === couple.id}
+          onClick={() => void onCreateSession(couple.id, selectedCategory)}
+        >
+          Crear sesion
         </Button>
       </div>
     </article>

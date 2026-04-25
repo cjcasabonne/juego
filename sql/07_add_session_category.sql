@@ -1,23 +1,34 @@
-CREATE OR REPLACE FUNCTION fn_create_session(p_couple_id UUID, p_category TEXT)
-RETURNS UUID LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE
-  v_session_id UUID;
-  v_member_count INT;
-  v_pool_count INT;
+ALTER TABLE public.game_sessions
+  ADD COLUMN IF NOT EXISTS category TEXT;
+
+DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1
-    FROM couple_members
-    WHERE couple_id = p_couple_id
-      AND user_id = auth.uid()
+    FROM pg_constraint
+    WHERE conname = 'game_sessions_category_not_blank'
+  ) THEN
+    ALTER TABLE public.game_sessions
+      ADD CONSTRAINT game_sessions_category_not_blank
+      CHECK (category IS NULL OR char_length(btrim(category)) BETWEEN 1 AND 80);
+  END IF;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.fn_create_session(p_couple_id UUID, p_category TEXT)
+RETURNS UUID LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_session_id   UUID;
+  v_member_count INT;
+  v_pool_count   INT;
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM couple_members
+    WHERE couple_id = p_couple_id AND user_id = auth.uid()
   ) THEN
     RAISE EXCEPTION 'unauthorized: no eres miembro de esta pareja';
   END IF;
 
-  SELECT COUNT(*) INTO v_member_count
-  FROM couple_members
-  WHERE couple_id = p_couple_id;
-
+  SELECT COUNT(*) INTO v_member_count FROM couple_members WHERE couple_id = p_couple_id;
   IF v_member_count != 2 THEN
     RAISE EXCEPTION 'couple_incomplete: la pareja necesita 2 miembros para iniciar una sesion';
   END IF;
@@ -26,8 +37,7 @@ BEGIN
     RAISE EXCEPTION 'invalid_category: debes elegir una categoria para iniciar la sesion';
   END IF;
 
-  SELECT COUNT(*) INTO v_pool_count
-  FROM questions
+  SELECT COUNT(*) INTO v_pool_count FROM questions
   WHERE is_active = true
     AND category = p_category
     AND (couple_id IS NULL OR couple_id = p_couple_id)
@@ -51,8 +61,7 @@ BEGIN
   INSERT INTO session_questions (session_id, question_id, position)
   SELECT v_session_id, q.id, ROW_NUMBER() OVER () AS position
   FROM (
-    SELECT id
-    FROM questions
+    SELECT id FROM questions
     WHERE is_active = true
       AND category = p_category
       AND (couple_id IS NULL OR couple_id = p_couple_id)
@@ -69,9 +78,7 @@ BEGIN
   ) q;
 
   INSERT INTO user_session_state (session_id, user_id)
-  SELECT v_session_id, user_id
-  FROM couple_members
-  WHERE couple_id = p_couple_id;
+  SELECT v_session_id, user_id FROM couple_members WHERE couple_id = p_couple_id;
 
   RETURN v_session_id;
 END;
